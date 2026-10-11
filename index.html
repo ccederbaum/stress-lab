@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Private Credit Stress Lab</title>
+<style>
+:root{--bg:#eef1f3;--pn:#fbfcfc;--tx:#1b2430;--mut:#5f6b78;--ln:#d5dbe0;--ac:#0f6b6b;--bad:#b3361d;--gh:#a9b3bd}
+@media(prefers-color-scheme:dark){:root{--bg:#12181e;--pn:#1a222a;--tx:#e6ebef;--mut:#93a0ad;--ln:#2c3640;--ac:#4fc0b8;--bad:#ff8a70;--gh:#55626f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1040px;margin:0 auto;padding:28px 16px 40px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{font:600 30px/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px;letter-spacing:-.01em}
+.lang{display:flex;flex-shrink:0}
+.lang button{padding:4px 10px;font-size:12px;font-weight:600;border-radius:0}
+.lang button:first-child{border-radius:4px 0 0 4px;border-right-width:0}
+.lang button:last-child{border-radius:0 4px 4px 0}
+button[aria-pressed=true]{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.sub{color:var(--mut);margin:0 0 22px;max-width:62ch}
+.g{display:grid;grid-template-columns:290px 1fr;gap:28px}
+@media(max-width:820px){.g{grid-template-columns:1fr}}
+.side{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:16px;align-self:start}
+.pre{display:flex;flex-wrap:wrap;gap:6px}
+button{border:1px solid var(--ln);background:transparent;color:var(--tx);border-radius:4px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+label{display:flex;justify-content:space-between;font-size:13px;margin-top:16px}
+label b{font-variant-numeric:tabular-nums;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.cb{justify-content:flex-start;gap:8px;line-height:1.3}
+.hero{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--ln);padding-bottom:14px}
+.big{font:600 64px/1 Georgia,serif;font-variant-numeric:tabular-nums;color:var(--ac)}
+.big.neg{color:var(--bad)}
+.hl{color:var(--mut);font-size:14px}
+.rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 24px;margin:6px 0 18px}
+.rows div{padding:10px 0;border-bottom:1px solid var(--ln)}
+.rows small{display:block;color:var(--mut);font-size:12px}
+.rows strong{font-size:20px;font-variant-numeric:tabular-nums}
+.bad{color:var(--bad)}
+.why{margin:14px 0 4px;max-width:62ch;border-left:3px solid var(--ac);padding-left:12px}
+h2{font-size:14px;font-weight:600;margin:0 0 4px}
+.cap{color:var(--mut);font-size:12px;margin:0 0 6px}
+svg{width:100%;height:auto;display:block}
+.n{color:var(--mut);font-size:12px;margin-top:22px;max-width:90ch}
+</style></head>
+<body><div class="w">
+<div class="top"><h1>Private Credit Stress Lab</h1>
+ <div class="lang" role="group" aria-label="Language / Langue"><button id="lfr" aria-pressed="true">FR</button><button id="len" aria-pressed="false">EN</button></div></div>
+<p class="sub" data-i="sub"></p>
+<div class="g">
+<div class="side">
+ <div class="pre" id="pre"></div>
+ <label for="r">Euribor<b id="vr"></b></label><input id="r" type="range" min="0" max="8" step="0.25">
+ <label for="d"><span data-i="ld"></span><b id="vd"></b></label><input id="d" type="range" min="0" max="15" step="0.5">
+ <label for="c"><span data-i="lc"></span><b id="vc"></b></label><input id="c" type="range" min="10" max="90" step="5">
+ <label for="p"><span data-i="lp"></span><b id="vp"></b></label><input id="p" type="range" min="0" max="60" step="5">
+ <label class="cb"><input type="checkbox" id="x"><span data-i="lx"></span></label>
+</div>
+<div>
+ <div class="hero"><span class="big" id="irr"></span><span class="hl" id="hl"></span></div>
+ <p class="why" id="why"></p>
+ <div class="rows" id="k"></div>
+ <h2 data-i="h2"></h2>
+ <p class="cap" data-i="cap"></p>
+ <svg id="ch" viewBox="0 0 600 250" role="img"></svg>
+</div></div>
+<p class="n" data-i="n"></p>
+</div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var T={
+fr:{sub:"Que devient un fonds de dette privée quand les taux montent ou que les défauts s'accumulent ? Un portefeuille fictif de 40 prêts, une cascade senior / mezzanine / equity sur 5 ans, et quatre curseurs.",
+ ld:"Défauts par an",lc:"Recouvrement",lp:"Intérêts payés en PIK",lx:"Les covenants rompus font monter les défauts",
+ hl:"rendement annuel (TRI) de l'equity,<br>contre %B% dans le scénario de base",
+ h2:"Flux versés à l'equity, par année (M€)",cap:"Barres pleines : scénario choisi. Pointillés : scénario de base. L'année 5 inclut la valeur résiduelle.",
+ n:"Modèle illustratif sur données fictives : environ 400 M€ de prêts (marges Euribor + 5 à 7 %), dette senior 55 % à Euribor + 2,50 %, mezzanine 15 % à + 6,50 %, equity 30 %, frais de gestion 0,8 %. Un prêt est « en rupture » si sa couverture d'intérêts passe sous 1,3x. Les recouvrements remboursent d'abord le senior, puis la mezzanine ; les pertes se lisent à l'échéance. Les hypothèses de défaut et de PIK pourront être calibrées sur les données publiques des BDC américaines (v2). Ce n'est pas un conseil en investissement.",
+ p:{base:"Base",hfl:"Higher-for-longer",rate:"Choc de taux",rec:"Récession",stag:"Stagflation"},
+ k:["Pertes cumulées sur 5 ans","Encours en rupture de covenant","Capital mezzanine perdu","Capital senior perdu"],y:"Année ",al:"Flux annuels à l'equity"},
+en:{sub:"What happens to a private debt fund when rates rise or defaults pile up? A fictional 40-loan portfolio, a senior / mezzanine / equity waterfall over 5 years, and four sliders.",
+ ld:"Annual defaults",lc:"Recovery rate",lp:"Interest paid in PIK",lx:"Covenant breaches push defaults up",
+ hl:"annual equity return (IRR),<br>vs. %B% in the base case",
+ h2:"Cash flows to equity, by year (€m)",cap:"Solid bars: selected scenario. Dashed: base case. Year 5 includes residual value.",
+ n:"Illustrative model on fictional data: about €400m of loans (Euribor + 5 to 7% margins), senior debt 55% at Euribor + 2.50%, mezzanine 15% at + 6.50%, equity 30%, management fees 0.8%. A loan is \"in breach\" when its interest coverage falls below 1.3x. Recoveries repay the senior first, then the mezzanine; losses show at maturity. Default and PIK assumptions could be calibrated on public US BDC data (v2). Not investment advice.",
+ p:{base:"Base case",hfl:"Higher for longer",rate:"Rate shock",rec:"Recession",stag:"Stagflation"},
+ k:["Cumulative losses over 5 years","Loans in covenant breach","Mezzanine capital lost","Senior capital lost"],y:"Year ",al:"Annual cash flows to equity"}};
+var lang="fr";
+try{lang=localStorage.getItem("lang")||(/^fr/i.test(navigator.language)?"fr":"en")}catch(e){lang=/^fr/i.test(navigator.language)?"fr":"en"}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var R=rng(42),L=[],A0=0;
+for(var i=0;i<40;i++){var par=6+R()*8;L.push({par:par,s:.05+R()*.02,lev:4+R()*3.5});A0+=par}
+var sp=L.reduce(function(a,l){return a+l.par*l.s},0)/A0;
+var BASE={r:3,d:2.5,c:60,p:0,x:0};
+var PRE={base:BASE,hfl:{r:4.5,d:4,c:55,p:10,x:1},rate:{r:6,d:3,c:60,p:0,x:1},rec:{r:3,d:8,c:45,p:10,x:1},stag:{r:6,d:8,c:45,p:30,x:1}};
+var P=Object.assign({},BASE);
+function irr(cf){
+ var f=function(k){return cf.reduce(function(a,v,t){return a+v/Math.pow(1+k,t)},0)};
+ if(!cf.slice(1).some(function(v){return v>1e-6}))return -1;
+ var lo=-.99,hi=2;if(f(lo)<0||f(hi)>0)return null;
+ for(var i=0;i<80;i++){var m=(lo+hi)/2;if(f(m)>0)lo=m;else hi=m}
+ return (lo+hi)/2}
+function sim(q){
+ var r=q.r/100,br=0;
+ L.forEach(function(l){if(1/(l.lev*(r+l.s))<1.3)br+=l.par});br/=A0;
+ var d=Math.min(.5,q.d/100*(q.x?1+2*br:1)),c=q.c/100,pk=q.p/100;
+ var bal=A0,S0=.55*A0,M0=.15*A0,S=S0,M=M0,E0=.3*A0,loss=0,def=0,cf=[-E0],fl=[];
+ for(var t=1;t<=5;t++){
+  var cp=bal*(r+sp),pik=cp*pk,df=bal*d,rec=df*c;
+  var cash=cp-pik-.008*bal-S*(r+.025)-M*(r+.065);
+  loss+=df-rec;
+  var a=Math.min(rec,S);S-=a;M-=Math.min(rec-a,M);
+  bal=bal-df+pik;
+  var dv=0;
+  if(cash<0)def-=cash;else{var u=Math.min(cash,def);def-=u;dv=cash-u}
+  fl.push(dv);cf.push(dv)}
+ var v=Math.max(0,bal-def),sr=Math.min(v,S);v-=sr;var mr=Math.min(v,M);v-=mr;
+ cf[5]+=v;fl[4]+=v;
+ return{irr:irr(cf),de:d,loss:loss/A0,br:br,sl:(S-sr)/S0,ml:(M-mr)/M0,fl:fl}}
+var B=sim(BASE);
+function num(v,n){var s=v.toFixed(n);return lang==="fr"?s.replace(".",","):s}
+function pc(x,n){return num(x*100,n===undefined?1:n)+(lang==="fr"?" %":"%")}
+function chart(a,b){
+ var m=Math.max.apply(null,a.concat(b,[1])),h=180,y0=205,s='';
+ for(var i=0;i<5;i++){var x=40+i*110,hb=b[i]/m*h,ha=a[i]/m*h;
+  s+='<rect x="'+x+'" y="'+(y0-hb)+'" width="84" height="'+hb+'" fill="none" stroke="var(--gh)" stroke-width="1.5" stroke-dasharray="4 3"/>';
+  s+='<rect x="'+(x+16)+'" y="'+(y0-ha)+'" width="52" height="'+ha+'" fill="var(--ac)"/>';
+  s+='<text x="'+(x+42)+'" y="232" text-anchor="middle" font-size="12" style="fill:var(--mut)">'+T[lang].y+(i+1)+'</text>';
+  s+='<text x="'+(x+42)+'" y="'+(y0-Math.max(ha,hb)-6)+'" text-anchor="middle" font-size="12" style="fill:var(--tx)">'+a[i].toFixed(0)+'</text>'}
+ s+='<line x1="30" x2="590" y1="205" y2="205" style="stroke:var(--ln)"/>';
+ $('ch').innerHTML=s}
+function why(o){
+ var fr=lang==="fr",ir=function(v){return v===null?"n.s.":pc(v)},nb=o.br<.005,s;
+ s=fr?"Avec un Euribor à "+pc(P.r/100,2)+" et "+pc(P.d/100)+" de défauts par an, "+(nb?"aucun prêt ne rompt son covenant":pc(o.br,0)+" de l'encours rompt son covenant"):
+  "With Euribor at "+pc(P.r/100,2)+" and "+pc(P.d/100)+" annual defaults, "+(nb?"no loan breaches its covenant":pc(o.br,0)+" of the portfolio breaches its covenant");
+ if(P.x&&o.de>P.d/100+.0005)s+=fr?", ce qui pousse les défauts à "+pc(o.de)+" par an":", pushing defaults up to "+pc(o.de)+" a year";
+ s+=". ";
+ if(o.sl>.005)s+=fr?"Les pertes consomment le coussin d'equity et de mezzanine : le senior perd "+pc(o.sl,0)+" de son capital.":"Losses wipe out the equity and mezzanine cushion: the senior loses "+pc(o.sl,0)+" of its capital.";
+ else if(o.ml>.005)s+=fr?"Les pertes dépassent le coussin d'equity : la mezzanine perd "+pc(o.ml,0)+" de son capital.":"Losses exceed the equity cushion: the mezzanine loses "+pc(o.ml,0)+" of its capital.";
+ else if(o.irr===null||o.irr<B.irr-.005)s+=fr?"L'equity absorbe seule le choc : son rendement passe de "+pc(B.irr)+" à "+ir(o.irr)+".":"Equity absorbs the shock alone: its return moves from "+pc(B.irr)+" to "+ir(o.irr)+".";
+ else s+=fr?"L'equity absorbe les pertes : senior et mezzanine restent protégés.":"Equity absorbs the losses: senior and mezzanine stay protected.";
+ return s}
+function render(){
+ var t=T[lang];
+ $('vr').textContent=num(P.r,2)+(lang==="fr"?" %":"%");$('vd').textContent=num(P.d,1)+(lang==="fr"?" %":"%");
+ $('vc').textContent=P.c+(lang==="fr"?" %":"%");$('vp').textContent=P.p+(lang==="fr"?" %":"%");
+ var o=sim(P),e=$('irr');
+ e.textContent=o.irr===null?"n.s.":pc(o.irr);e.className="big"+(o.irr!==null&&o.irr<0?" neg":"");
+ $('hl').innerHTML=t.hl.replace("%B%",pc(B.irr));
+ var cls=function(v){return v>0.005?' class="bad"':''};
+ $('k').innerHTML=
+  '<div><small>'+t.k[0]+'</small><strong'+cls(o.loss)+'>'+pc(o.loss)+'</strong></div>'+
+  '<div><small>'+t.k[1]+'</small><strong'+cls(o.br)+'>'+pc(o.br,0)+'</strong></div>'+
+  '<div><small>'+t.k[2]+'</small><strong'+cls(o.ml)+'>'+pc(o.ml,0)+'</strong></div>'+
+  '<div><small>'+t.k[3]+'</small><strong'+cls(o.sl)+'>'+pc(o.sl,0)+'</strong></div>';
+ $('why').textContent=why(o);chart(o.fl,B.fl)}
+function setLang(l){
+ lang=l;try{localStorage.setItem("lang",l)}catch(e){}
+ document.documentElement.lang=l;
+ $('lfr').setAttribute("aria-pressed",l==="fr");$('len').setAttribute("aria-pressed",l==="en");
+ document.querySelectorAll("[data-i]").forEach(function(n){n.textContent=T[l][n.getAttribute("data-i")]});
+ $('ch').setAttribute("aria-label",T[l].al);
+ $('pre').innerHTML="";
+ Object.keys(PRE).forEach(function(k){var b=document.createElement('button');b.textContent=T[l].p[k];b.onclick=function(){setP(PRE[k])};$('pre').appendChild(b)});
+ render()}
+function setP(q){P=Object.assign({},q);$('r').value=P.r;$('d').value=P.d;$('c').value=P.c;$('p').value=P.p;$('x').checked=!!P.x;render()}
+function upd(){P={r:+$('r').value,d:+$('d').value,c:+$('c').value,p:+$('p').value,x:$('x').checked?1:0};render()}
+['r','d','c','p'].forEach(function(i){$(i).oninput=upd});$('x').onchange=upd;
+$('lfr').onclick=function(){setLang("fr")};$('len').onclick=function(){setLang("en")};
+setP(BASE);setLang(lang);
+})();
+</script></body></html>
