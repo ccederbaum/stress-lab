@@ -1,6 +1,6 @@
 # Private Credit Stress Lab
 
-**Live demo: [https://ccederbaum.github.io/stress-lab/](https://YOUR-USERNAME.github.io/stress-lab/)** (English / French)
+**Live demo: https://ccederbaum.github.io/stress-lab/](https://ccederbaum.github.io/stress-lab/)** (English / French)
 
 An interactive stress test of a fictional private debt fund. Move four sliders (base rate, default rate, recovery, PIK share) and see what happens to the fund's equity return, covenant breaches and the losses absorbed by each tranche.
 
